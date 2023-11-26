@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kiss Altimeter</string>
+	<string>Altimeter</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -50,5 +50,8 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs access to location to determine altitude.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs access to location to determine altitude.</string></dict>
+	<string>This app needs access to location to determine altitude.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to location to determine altitude.</string>
+	</dict>
 </plist>

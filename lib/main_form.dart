@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'back_painter.dart';
 
 class MainForm extends StatefulWidget {
   const MainForm({super.key});
@@ -30,7 +33,6 @@ class MainFormState extends State<MainForm> {
   }
 
   String altText = "...";
-  String altAccText = "-";
   String errorText = "";
   int counter = 0;
   double alt = 0;
@@ -53,14 +55,15 @@ class MainFormState extends State<MainForm> {
       var value = await _determinePosition();
       setState(() {
         alt = value.altitude;
-        altAccText = "Accuracy: ${formatAltitude(value.altitudeAccuracy, 2)}";
         altAcc = value.altitudeAccuracy;
+        //alt = 42;
+        //altAcc = 2.42;
         errorText = "";
         counter++;
       });
     } catch (err) {
       setState(() {
-        errorText = "$err";
+        errorText = "Waiting for location";
         counter--;
       });
     }
@@ -92,71 +95,143 @@ class MainFormState extends State<MainForm> {
   }
 
   Widget accWidget(BuildContext context) {
-    double width = 0;
-    Color color = Colors.white12;
-    if (altAcc > 20) {
-      width = 300;
-    } else {
-      double v = (altAcc) / 20;
-      //v = 0.1;
-      width = v * 300 + 50;
-      color = Color.fromARGB(255, 0, ((1 - v) * 255).round(), 0);
+    int count = (altAcc / 2).round();
+    if (count > 8) {
+      count = 8;
     }
-    if (errorText != "") {
-      color = Colors.red;
+    if (count < 2) {
+      count = 2;
     }
-    return Column(
-      children: [
-        Container(height: 10, width: width, color: color),
-        Container(height: 1, width: 300, color: Colors.white30),
-      ],
+    Color col = const Color.fromARGB(255, 150, 150, 150);
+    if (altAcc < 20) {
+      col = Colors.orange;
+    }
+    if (altAcc < 15) {
+      col = Colors.yellow;
+    }
+    if (altAcc < 10) {
+      col = Colors.lightGreen;
+    }
+    if (altAcc < 5) {
+      col = Colors.green;
+    }
+
+    var st = TextStyle(
+      fontSize: 16,
+      fontFamily: "Courier New",
+      fontWeight: FontWeight.bold,
+      color: col,
+    );
+
+    List<Widget> items = [
+      Text("▪", style: st),
+    ];
+
+    for (int i = 0; i < count; i++) {
+      items.insert(0, Text("▪", style: st));
+    }
+    for (int i = 0; i < count; i++) {
+      items.add(Text("▪", style: st));
+    }
+
+    items.insert(
+        0,
+        Text(
+          "-",
+          style: st,
+        ));
+    items.add(Text(
+      "-",
+      style: st,
+    ));
+
+    return FittedBox(
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: items,
+        ),
+      ),
     );
   }
 
   Widget buildButtons(BuildContext context) {
     return Container(
-      height: 70,
-      //color: Colors.amber,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          OutlinedButton(
-            onPressed: () {
+      padding: const EdgeInsets.only(bottom: 20),
+      child: ToggleButtons(
+        selectedColor: Colors.blue,
+        color: Colors.white54,
+        fillColor: Colors.blue.withOpacity(0.2),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        isSelected: [uom == UOM_METERS, uom == UOM_FEET],
+        onPressed: (index) {
+          switch (index) {
+            case 0:
               setState(() {
                 uom = UOM_METERS;
               });
-            },
-            child: SizedBox(
-              width: 100,
-              child: Center(
-                child: Text(
-                  "METERS",
-                  style: TextStyle(
-                    color: uom == UOM_METERS ? Colors.green : Colors.grey,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 20,
-          ),
-          OutlinedButton(
-            onPressed: () {
+              break;
+            case 1:
               setState(() {
                 uom = UOM_FEET;
               });
-            },
-            child: SizedBox(
-              width: 100,
-              child: Center(
-                child: Text(
-                  "FEET",
-                  style: TextStyle(
-                      color: uom == UOM_FEET ? Colors.green : Colors.grey,
-                      fontSize: 16),
-                ),
+              break;
+          }
+        },
+        children: [
+          Container(
+            color: uom == UOM_METERS
+                ? Colors.black
+                : const Color.fromARGB(255, 20, 20, 20),
+            width: 100,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "METERS",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 5),
+                    height: 5,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      color: uom == UOM_METERS ? Colors.blue : Colors.white30,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            color: uom == UOM_FEET
+                ? Colors.black
+                : const Color.fromARGB(255, 20, 20, 20),
+            width: 100,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "FEET",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 5),
+                    height: 5,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      color: uom == UOM_FEET ? Colors.blue : Colors.white30,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -165,70 +240,109 @@ class MainFormState extends State<MainForm> {
     );
   }
 
+  Widget buildValue() {
+    if (errorText.isNotEmpty) {
+      return Center(
+        child: Text(
+          errorText,
+          style: const TextStyle(
+            color: Colors.orange,
+            fontSize: 24,
+          ),
+        ),
+      );
+    }
+    return LayoutBuilder(
+      builder: (BuildContext, BoxConstraints constraints) {
+        var padding = min(constraints.minWidth, constraints.minHeight) / 5;
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+                width: 1, color: const Color.fromARGB(255, 50, 50, 50)),
+          ),
+          margin: EdgeInsets.all(padding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 0),
+                  child: Text(
+                    "ALTITUDE",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ),
+              FittedBox(
+                child: Text(
+                  formatAltitude(alt, 0),
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Text(
+                uom == UOM_METERS ? "meters" : "feet",
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontSize: 18,
+                ),
+              ),
+              Column(
+                children: [
+                  accWidget(context),
+                  Text(
+                    "ACCURACY ${formatAltitude(altAcc, 2)}",
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        shadowColor: Colors.blue,
-        title: const Text(
-          "KISS Altimeter",
-          style: TextStyle(color: Colors.blue),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(top: 50),
-              child: Container(
-                child: Column(
-                  children: [
-                    Center(
-                      child: Text(
-                        formatAltitude(alt, 0),
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          fontSize: 96,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      uom == UOM_METERS ? "meters" : "feet",
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          CustomPaint(
+            painter: BackPainter(),
+            child: Container(),
+            key: UniqueKey(),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(
+                child: Container(child: buildValue()),
+              ),
+              Center(
+                child: buildButtons(context),
+              ),
+              const Center(
+                child: Text(
+                  "Copyright (c), Poluianov Ivan, 2023",
+                  style: TextStyle(color: Colors.white38),
                 ),
               ),
-            ),
-            Column(
-              children: [
-                accWidget(context),
-                Text(
-                  altAccText,
-                  style: const TextStyle(color: Colors.green),
-                ),
-              ],
-            ),
-            Text(
-              errorText,
-              style: const TextStyle(color: Colors.red, fontSize: 8),
-            ),
-            buildButtons(context),
-            const Center(
-              child: Text(
-                "Copyright (c), Poluianov Ivan, 2023",
-                style: TextStyle(color: Colors.white38),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
