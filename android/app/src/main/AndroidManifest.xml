@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.kiss_altimeter">
+    package="com.poluianov.kiss_altimeter">
    <application
         android:label="kiss_altimeter"
         android:name="${applicationName}"

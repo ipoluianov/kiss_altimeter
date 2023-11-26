@@ -1,4 +1,4 @@
-package com.example.kiss_altimeter
+package com.poluianov.kiss_altimeter
 
 import io.flutter.embedding.android.FlutterActivity
 
